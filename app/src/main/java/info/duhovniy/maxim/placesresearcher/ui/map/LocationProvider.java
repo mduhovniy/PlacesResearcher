@@ -39,6 +39,10 @@ public class LocationProvider implements
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
 
+    public GoogleApiClient getGoogleApiClient() {
+        return mGoogleApiClient;
+    }
+
     public LocationProvider(Context context, LocationCallback callback) {
         mGoogleApiClient = new GoogleApiClient.Builder(context)
                 .addConnectionCallbacks(this)

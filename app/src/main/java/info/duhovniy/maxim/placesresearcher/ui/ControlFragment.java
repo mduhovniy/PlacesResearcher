@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 
 import java.util.ArrayList;
 
@@ -25,14 +24,13 @@ import info.duhovniy.maxim.placesresearcher.network.search.SearchServiceAutocomp
 import info.duhovniy.maxim.placesresearcher.network.search.SearchServiceNearby;
 import info.duhovniy.maxim.placesresearcher.network.search.SearchServiceRadar;
 import info.duhovniy.maxim.placesresearcher.network.search.SearchServiceText;
-import info.duhovniy.maxim.placesresearcher.ui.graphics.MyCanvas;
 
-public class ControlFragment extends Fragment {
+public class ControlFragment extends Fragment implements View.OnClickListener {
 
     private PlaceSearchReceiver receiver;
 
     private ArrayList<Place> resultList = new ArrayList<>();
-    SearchListAdapter searchListAdapter;
+    private SearchListAdapter searchListAdapter;
 
     private static ControlFragment instance = null;
 
@@ -51,6 +49,19 @@ public class ControlFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_control, container, false);
+
+        searchText = (EditText) rootView.findViewById(R.id.search_text);
+        resultRecyclerView = (RecyclerView) rootView.findViewById(R.id.search_list_result);
+
+        // use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        resultRecyclerView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        resultRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        searchListAdapter = new SearchListAdapter(resultList, resultRecyclerView, getContext());
+        resultRecyclerView.setAdapter(searchListAdapter);
 
         return rootView;
     }
@@ -73,62 +84,39 @@ public class ControlFragment extends Fragment {
         Button searchButton2 = (Button) rootView.findViewById(R.id.text_search_button);
         Button searchButton3 = (Button) rootView.findViewById(R.id.radar_search_button);
         Button searchButton4 = (Button) rootView.findViewById(R.id.nearby_search_button);
-        searchText = (EditText) rootView.findViewById(R.id.search_text);
-        resultRecyclerView = (RecyclerView) rootView.findViewById(R.id.search_list_result);
 
-        // use this setting to improve performance if you know that changes
-        // in content do not change the layout size of the RecyclerView
-        resultRecyclerView.setHasFixedSize(true);
-
-        // use a linear layout manager
-        resultRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        searchListAdapter = new SearchListAdapter(resultList, resultRecyclerView, getContext());
-        resultRecyclerView.setAdapter(searchListAdapter);
-
-        ((LinearLayout)rootView.findViewById(R.id.default_control_frame)).addView(new MyCanvas(getContext()));
-
-        searchButton1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), SearchServiceAutocomplete.class);
-                intent.putExtra(NetworkConstants.REQUEST_STRING, searchText.getText().toString());
-                getActivity().startService(intent);
-            }
-        });
-
-        searchButton2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), SearchServiceText.class);
-                intent.putExtra(NetworkConstants.REQUEST_STRING, searchText.getText().toString());
-                getActivity().startService(intent);
-            }
-        });
-
-        searchButton3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), SearchServiceRadar.class);
-                intent.putExtra(NetworkConstants.REQUEST_STRING, searchText.getText().toString());
-                getActivity().startService(intent);
-            }
-        });
-
-        searchButton4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), SearchServiceNearby.class);
-                intent.putExtra(NetworkConstants.REQUEST_STRING, searchText.getText().toString());
-                getActivity().startService(intent);
-            }
-        });
+        searchButton1.setOnClickListener(this);
+        searchButton2.setOnClickListener(this);
+        searchButton3.setOnClickListener(this);
+        searchButton4.setOnClickListener(this);
     }
 
     @Override
     public void onDestroy() {
         getActivity().unregisterReceiver(receiver);
         super.onDestroy();
+    }
+
+    @Override
+    public void onClick(View v) {
+        Intent intent = new Intent();
+        switch (v.getId())
+        {
+            case R.id.autocomplete_search_button:
+                intent.setClass(getActivity(), SearchServiceAutocomplete.class);
+                break;
+            case R.id.text_search_button:
+                intent.setClass(getActivity(), SearchServiceText.class);
+                break;
+            case R.id.radar_search_button:
+                intent.setClass(getActivity(), SearchServiceRadar.class);
+                break;
+            case R.id.nearby_search_button:
+                intent.setClass(getActivity(), SearchServiceNearby.class);
+                break;
+        }
+        intent.putExtra(NetworkConstants.REQUEST_STRING, searchText.getText().toString());
+        getActivity().startService(intent);
     }
 
     public class PlaceSearchReceiver extends BroadcastReceiver {
@@ -140,6 +128,9 @@ public class ControlFragment extends Fragment {
 
             searchListAdapter = new SearchListAdapter(resultList, resultRecyclerView, getContext());
             resultRecyclerView.setAdapter(searchListAdapter);
+
+//            searchListAdapter.updateList(resultList);
+
             switch (intent.getAction()) {
                 case NetworkConstants.AUTOCOMPLETE_SEARCH:
                     rootView.setBackgroundColor(Color.WHITE);
