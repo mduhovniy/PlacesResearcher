@@ -55,12 +55,11 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Re
         mView = v;
         mContext = context;
     }
-/*
 
     public void updateList(ArrayList<Place> list) {
         listPlaces = list;
+        notifyDataSetChanged();
     }
-*/
 
     // Involves inflating a layout from XML and returning the holder
     @Override

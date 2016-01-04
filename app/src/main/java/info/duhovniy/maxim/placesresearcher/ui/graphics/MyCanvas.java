@@ -24,7 +24,7 @@ public class MyCanvas extends View {
         float density = getResources().getDisplayMetrics().density;
         float scale = getResources().getDisplayMetrics().scaledDensity;
 
-        paint.setTextSize(40 * scale);
-        canvas.drawText("Control Fragment", 50 * density,  50 * density, paint);
+        paint.setTextSize(50 * scale);
+        canvas.drawText("Place Researcher", 50 * density,  50 * density, paint);
     }
 }

@@ -1,10 +1,6 @@
 package info.duhovniy.maxim.placesresearcher.ui;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -27,7 +23,7 @@ import info.duhovniy.maxim.placesresearcher.network.search.SearchServiceText;
 
 public class ControlFragment extends Fragment implements View.OnClickListener {
 
-    private PlaceSearchReceiver receiver;
+//    private PlaceSearchReceiver receiver;
 
     private ArrayList<Place> resultList = new ArrayList<>();
     private SearchListAdapter searchListAdapter;
@@ -35,7 +31,6 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     private static ControlFragment instance = null;
 
     private View rootView;
-    private RecyclerView resultRecyclerView;
     private EditText searchText;
 
     public static ControlFragment getInstance() {
@@ -51,13 +46,15 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
         rootView = inflater.inflate(R.layout.fragment_control, container, false);
 
         searchText = (EditText) rootView.findViewById(R.id.search_text);
-        resultRecyclerView = (RecyclerView) rootView.findViewById(R.id.search_list_result);
+
+        RecyclerView resultRecyclerView = (RecyclerView) rootView.findViewById(R.id.search_list_result);
 
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
         resultRecyclerView.setHasFixedSize(true);
 
         // use a linear layout manager
+
         resultRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         searchListAdapter = new SearchListAdapter(resultList, resultRecyclerView, getContext());
@@ -69,16 +66,6 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        IntentFilter filter = new IntentFilter();
-        filter.addCategory(Intent.CATEGORY_DEFAULT);
-        filter.addAction(NetworkConstants.AUTOCOMPLETE_SEARCH);
-        filter.addAction(NetworkConstants.NEARBY_SEARCH);
-        filter.addAction(NetworkConstants.RADAR_SEARCH);
-        filter.addAction(NetworkConstants.TEXT_SEARCH);
-
-        receiver = new PlaceSearchReceiver();
-        getActivity().registerReceiver(receiver, filter);
 
         Button searchButton1 = (Button) rootView.findViewById(R.id.autocomplete_search_button);
         Button searchButton2 = (Button) rootView.findViewById(R.id.text_search_button);
@@ -92,16 +79,11 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
     }
 
     @Override
-    public void onDestroy() {
-        getActivity().unregisterReceiver(receiver);
-        super.onDestroy();
-    }
-
-    @Override
     public void onClick(View v) {
         Intent intent = new Intent();
-        switch (v.getId())
-        {
+        intent.putExtra(NetworkConstants.REQUEST_STRING, searchText.getText().toString());
+
+        switch (v.getId()) {
             case R.id.autocomplete_search_button:
                 intent.setClass(getActivity(), SearchServiceAutocomplete.class);
                 break;
@@ -115,9 +97,15 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
                 intent.setClass(getActivity(), SearchServiceNearby.class);
                 break;
         }
-        intent.putExtra(NetworkConstants.REQUEST_STRING, searchText.getText().toString());
+
         getActivity().startService(intent);
     }
+
+    public void onResultListChange(ArrayList<Place> list) {
+        resultList = list;
+        searchListAdapter.updateList(resultList);
+    }
+/*
 
     public class PlaceSearchReceiver extends BroadcastReceiver {
 
@@ -128,8 +116,10 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
 
             searchListAdapter = new SearchListAdapter(resultList, resultRecyclerView, getContext());
             resultRecyclerView.setAdapter(searchListAdapter);
-
+//TODO: to ask what is wrong in this implementation?
 //            searchListAdapter.updateList(resultList);
+//          OR
+//            searchListAdapter.notifyDataSetChanged();
 
             switch (intent.getAction()) {
                 case NetworkConstants.AUTOCOMPLETE_SEARCH:
@@ -142,4 +132,6 @@ public class ControlFragment extends Fragment implements View.OnClickListener {
 
         }
     }
+*/
+
 }
