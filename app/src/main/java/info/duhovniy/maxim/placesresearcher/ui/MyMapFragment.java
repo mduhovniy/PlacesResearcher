@@ -10,7 +10,10 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.OnStreetViewPanoramaReadyCallback;
+import com.google.android.gms.maps.StreetViewPanorama;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.SupportStreetViewPanoramaFragment;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -21,10 +24,8 @@ import info.duhovniy.maxim.placesresearcher.ui.map.LocationProvider;
 import info.duhovniy.maxim.placesresearcher.ui.map.MyItem;
 
 
-public class MapFragment extends SupportMapFragment implements OnMapReadyCallback,
-        LocationProvider.LocationCallback {
-
-//    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+public class MyMapFragment extends SupportMapFragment implements OnMapReadyCallback,
+        LocationProvider.LocationCallback, OnStreetViewPanoramaReadyCallback {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
@@ -34,13 +35,15 @@ public class MapFragment extends SupportMapFragment implements OnMapReadyCallbac
 
     private ClusterManager<MyItem> mClusterManager = null;
 
-    private static MapFragment instance = null;
+    private static MyMapFragment instance = null;
 
     private Circle circle;
 
-    public static MapFragment getInstance() {
+    private LatLng latLng = new LatLng(0, 0);
+
+    public static MyMapFragment getInstance() {
         if (instance == null) {
-            instance = new MapFragment();
+            instance = new MyMapFragment();
         }
         return instance;
     }
@@ -52,6 +55,18 @@ public class MapFragment extends SupportMapFragment implements OnMapReadyCallbac
         mLocationProvider = new LocationProvider(getContext(), this);
 
         getMapAsync(this);
+
+        SupportStreetViewPanoramaFragment streetViewPanoramaFragment =
+                new SupportStreetViewPanoramaFragment();
+
+        getChildFragmentManager().beginTransaction()
+                .add(streetViewPanoramaFragment, "panorama")
+                .commit();
+
+        streetViewPanoramaFragment.setUserVisibleHint(true);
+
+        streetViewPanoramaFragment.getStreetViewPanoramaAsync(this);
+
     }
 
     @Override
@@ -61,79 +76,43 @@ public class MapFragment extends SupportMapFragment implements OnMapReadyCallbac
         mMap.setMyLocationEnabled(true);
 
         CircleOptions circleOptions = new CircleOptions()
-                .center(new LatLng(0, 0))
+                .center(latLng)
                 .radius(1000); // In meters
 
         // Get back the mutable Circle
         circle = mMap.addCircle(circleOptions);
         circle.setStrokeColor(Color.RED);
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
-//        getMapAsync(this);
         mLocationProvider.connect();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-//        mMap.clear();
         mLocationProvider.disconnect();
     }
-
-/*
-    @Override
-    public void onConnected(Bundle bundle) {
-        Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        if (mLastLocation != null && mMap != null) {
-            Snackbar.make(getInstance().getView(), "Your location is found!", Snackbar.LENGTH_LONG).show();
-            LatLng telAviv = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(telAviv).title("here I am!!!"));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(telAviv, 15));
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        if (connectionResult.hasResolution()) {
-            try {
-                // Start an Activity that tries to resolve the error
-                connectionResult.startResolutionForResult(getActivity(), CONNECTION_FAILURE_RESOLUTION_REQUEST);
-            } catch (IntentSender.SendIntentException e) {
-                e.printStackTrace();
-            }
-        } else {
-            Log.i(UIConstants.LOG_TAG, "Location services connection failed with code " + connectionResult.getErrorCode());
-
-        }
-    }
-*/
 
     @Override
     public void handleNewLocation(Location location) {
         Log.d(UIConstants.LOG_TAG, location.toString());
 
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
         circle.setCenter(latLng);
 
         MarkerOptions options = new MarkerOptions()
                 .position(latLng)
                 .title("I am here! " + ++locationCounter);
-        if(mClusterManager == null && mMap != null) {
+        if (mClusterManager == null && mMap != null) {
             setUpCluster();
         } else {
-//            mMap.clear();
             assert mMap != null;
             mClusterManager.addItem(new MyItem(mMap.addMarker(options).getPosition()));
-//            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14));
         }
     }
 
@@ -151,4 +130,8 @@ public class MapFragment extends SupportMapFragment implements OnMapReadyCallbac
         }
     }
 
+    @Override
+    public void onStreetViewPanoramaReady(StreetViewPanorama streetViewPanorama) {
+        streetViewPanorama.setPosition(latLng);
+    }
 }

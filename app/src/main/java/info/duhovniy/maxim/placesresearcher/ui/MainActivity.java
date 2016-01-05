@@ -3,15 +3,15 @@ package info.duhovniy.maxim.placesresearcher.ui;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AppCompatActivity;
 
 import info.duhovniy.maxim.placesresearcher.R;
 import info.duhovniy.maxim.placesresearcher.network.NetworkConstants;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends AppCompatActivity {
 
-    private MapFragment mapFragment = MapFragment.getInstance();
+    private MyMapFragment mapFragment = MyMapFragment.getInstance();
     private ControlFragment controlFragment = ControlFragment.getInstance();
 
     private PlaceSearchReceiver receiver;

@@ -1,6 +1,7 @@
 package info.duhovniy.maxim.placesresearcher.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -98,6 +99,11 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Re
             @Override
             public void onClick(View v) {
 
+                Intent intent = new Intent(mContext, MyMapActivity.class);
+                intent.putExtra(UIConstants.LAT, listPlaces.get(position).getPlaceLocation().latitude);
+                intent.putExtra(UIConstants.LNG, listPlaces.get(position).getPlaceLocation().longitude);
+
+                mContext.startActivity(intent);
 /*
                 // transfer ID to MainActivity
                 mEditMovie.editMovie(listMovies.get(position));
