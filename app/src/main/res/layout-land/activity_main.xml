@@ -6,6 +6,10 @@
     android:orientation="horizontal"
     tools:context=".ui.MainActivity">
 
+    <include
+        android:id="@+id/app_bar"
+        layout="@layout/app_bar" />
+
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/control_fragment_container"
         android:layout_width="0dp"

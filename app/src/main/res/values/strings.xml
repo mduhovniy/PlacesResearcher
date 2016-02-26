@@ -10,5 +10,9 @@
     <string name="start_updates">Start updates</string>
     <string name="stop_updates">Stop updates</string>
     <string name="location_updated_message">Location updated</string>
+    <string name="search_hint">what are you looking for…</string>
+    <string name="search_header">Unlock Drawer</string>
+    <string name="edit_header">Lock Drawer</string>
+    <string name="base_header">Close Drawer</string>
 
 </resources>

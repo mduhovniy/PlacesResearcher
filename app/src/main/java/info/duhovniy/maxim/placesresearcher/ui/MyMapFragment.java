@@ -4,7 +4,6 @@ import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
-import android.util.Log;
 
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -99,7 +98,7 @@ public class MyMapFragment extends SupportMapFragment implements OnMapReadyCallb
 
     @Override
     public void handleNewLocation(Location location) {
-        Log.d(UIConstants.LOG_TAG, location.toString());
+        //Log.d(UIConstants.LOG_TAG, location.toString());
 
         latLng = new LatLng(location.getLatitude(), location.getLongitude());
 

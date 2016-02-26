@@ -100,9 +100,10 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Re
             public void onClick(View v) {
 
                 Intent intent = new Intent(mContext, MyMapActivity.class);
-                intent.putExtra(UIConstants.LAT, listPlaces.get(position).getPlaceLocation().latitude);
-                intent.putExtra(UIConstants.LNG, listPlaces.get(position).getPlaceLocation().longitude);
-
+                if (listPlaces.get(position).getPlaceLocation() != null) {
+                    intent.putExtra(UIConstants.LAT, listPlaces.get(position).getPlaceLocation().latitude);
+                    intent.putExtra(UIConstants.LNG, listPlaces.get(position).getPlaceLocation().longitude);
+                }
                 mContext.startActivity(intent);
 /*
                 // transfer ID to MainActivity
