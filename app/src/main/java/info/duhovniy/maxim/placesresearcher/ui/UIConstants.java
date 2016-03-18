@@ -10,5 +10,6 @@ public class UIConstants {
     public static final String LOG_TAG = "info.duhovniy.maxim.placesresearcher.ui.LOG";
     public static final String LAT = "info.duhovniy.maxim.placesresearcher.LAT";
     public static final String LNG = "info.duhovniy.maxim.placesresearcher.LNG";
+    public static final int PHOTO_SIZE = 300;
 
 }

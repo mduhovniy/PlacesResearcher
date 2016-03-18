@@ -14,5 +14,10 @@
     <string name="search_header">Unlock Drawer</string>
     <string name="edit_header">Lock Drawer</string>
     <string name="base_header">Close Drawer</string>
+    <string name="google_app_id">AIzaSyAVpGQUCLxk7Jx0cpOG1skDz-khBSNBlS8</string>
+
+    <string name="settings_unit_km">Kilometers</string>
+    <string name="settings_unit_miles">Miles</string>
+    <string name="GPS_check_response">Your GPS seems to be disabled, do you want to enable it?</string>
 
 </resources>

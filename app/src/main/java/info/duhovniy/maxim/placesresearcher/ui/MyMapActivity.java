@@ -41,7 +41,7 @@ public class MyMapActivity extends AppCompatActivity implements OnStreetViewPano
 
         fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().add(R.id.map_fragment_container,
-                mapFragment, UIConstants.MAP_FRAGMENT).addToBackStack(null).commit();
+                mapFragment, UIConstants.MAP_FRAGMENT).commit();
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
@@ -62,11 +62,11 @@ public class MyMapActivity extends AppCompatActivity implements OnStreetViewPano
 
         View header = navigationView.inflateHeaderView(R.layout.drawer_header);
 
+
         SupportStreetViewPanoramaFragment streetViewPanoramaFragment =
                 (SupportStreetViewPanoramaFragment) fragmentManager
                         .findFragmentById(R.id.street_view_panorama);
         streetViewPanoramaFragment.getStreetViewPanoramaAsync(this);
-
 
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {

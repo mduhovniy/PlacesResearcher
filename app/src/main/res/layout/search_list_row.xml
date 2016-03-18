@@ -2,9 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@color/colorPrimaryDark"
     android:orientation="vertical"
     android:padding="5dp">
 
@@ -23,18 +22,16 @@
 
             <ImageView
                 android:id="@+id/place_image"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
                 android:layout_gravity="center|top"
                 android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:layout_weight="1"/>
+                android:layout_marginRight="5dp"/>
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_weight="1">
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/place_name_text"
@@ -43,13 +40,6 @@
                     android:gravity="start"
                     android:textSize="20sp"
                     tools:text="Place Name"/>
-
-                <TextView
-                    android:id="@+id/place_id_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="start"
-                    tools:text="place ID"/>
 
                 <TextView
                     android:id="@+id/place_address_text"

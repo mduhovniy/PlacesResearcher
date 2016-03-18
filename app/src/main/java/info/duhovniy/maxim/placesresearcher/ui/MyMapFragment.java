@@ -9,10 +9,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.OnStreetViewPanoramaReadyCallback;
-import com.google.android.gms.maps.StreetViewPanorama;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.SupportStreetViewPanoramaFragment;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -24,7 +21,7 @@ import info.duhovniy.maxim.placesresearcher.ui.map.MyItem;
 
 
 public class MyMapFragment extends SupportMapFragment implements OnMapReadyCallback,
-        LocationProvider.LocationCallback, OnStreetViewPanoramaReadyCallback {
+        LocationProvider.LocationCallback {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
@@ -54,18 +51,6 @@ public class MyMapFragment extends SupportMapFragment implements OnMapReadyCallb
         mLocationProvider = new LocationProvider(getContext(), this);
 
         getMapAsync(this);
-
-        SupportStreetViewPanoramaFragment streetViewPanoramaFragment =
-                new SupportStreetViewPanoramaFragment();
-
-        getChildFragmentManager().beginTransaction()
-                .add(streetViewPanoramaFragment, "panorama")
-                .commit();
-
-        streetViewPanoramaFragment.setUserVisibleHint(true);
-
-        streetViewPanoramaFragment.getStreetViewPanoramaAsync(this);
-
     }
 
     @Override
@@ -81,6 +66,7 @@ public class MyMapFragment extends SupportMapFragment implements OnMapReadyCallb
         // Get back the mutable Circle
         circle = mMap.addCircle(circleOptions);
         circle.setStrokeColor(Color.RED);
+        circle.setStrokeWidth(2);
 
     }
 
@@ -129,8 +115,4 @@ public class MyMapFragment extends SupportMapFragment implements OnMapReadyCallb
         }
     }
 
-    @Override
-    public void onStreetViewPanoramaReady(StreetViewPanorama streetViewPanorama) {
-        streetViewPanorama.setPosition(latLng);
-    }
 }

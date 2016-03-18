@@ -2,6 +2,9 @@ package info.duhovniy.maxim.placesresearcher.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.BitmapFactory;
+import android.os.Environment;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -11,16 +14,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.util.ArrayList;
+import java.io.File;
 
 import info.duhovniy.maxim.placesresearcher.R;
-import info.duhovniy.maxim.placesresearcher.network.Place;
+import info.duhovniy.maxim.placesresearcher.db.DBConstants;
 
 public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.RecyclerViewHolder> {
 
-    private ArrayList<Place> listPlaces = new ArrayList<>();
+    private Cursor cursorPlaces = null;
     private View mView;
     private Context mContext;
 
@@ -28,7 +30,7 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Re
     // Used to cache the views within the item layout for fast access
     public class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
-        public TextView placeName, placeID, formattedAddrress;
+        public TextView placeName, formattedAddrress;
         public ImageView placePhoto;
         public LinearLayout mLayout;
         public CardView cv;
@@ -41,7 +43,6 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Re
             super(itemView);
 
             placeName = (TextView) itemView.findViewById(R.id.place_name_text);
-            placeID = (TextView) itemView.findViewById(R.id.place_id_text);
             formattedAddrress = (TextView) itemView.findViewById(R.id.place_address_text);
             placePhoto = (ImageView) itemView.findViewById(R.id.place_image);
             cv = (CardView) itemView.findViewById(R.id.cv);
@@ -51,14 +52,13 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Re
         }
     }
 
-    public SearchListAdapter(ArrayList<Place> list, View v, Context context) {
-        listPlaces = list;
+    public SearchListAdapter(View v, Context context) {
         mView = v;
         mContext = context;
     }
 
-    public void updateList(ArrayList<Place> list) {
-        listPlaces = list;
+    public void updateList(Cursor cursor) {
+        cursorPlaces = cursor;
         notifyDataSetChanged();
     }
 
@@ -79,69 +79,61 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Re
     public void onBindViewHolder(RecyclerViewHolder viewHolder, final int position) {
 
         // Set item views based on the data model
-        viewHolder.placeName.setText(listPlaces.get(position).getPlaceName());
-        viewHolder.placeID.setText(listPlaces.get(position).getPlaceID());
-        viewHolder.formattedAddrress.setText(listPlaces.get(position).getFormattedAddress());
+        if (cursorPlaces.moveToPosition(position)) {
+            viewHolder.placeName.setText(cursorPlaces.getString(cursorPlaces.getColumnIndex(DBConstants.NAME)));
+            viewHolder.formattedAddrress.setText(cursorPlaces.getString(cursorPlaces.getColumnIndex(DBConstants.ADDRESS)));
 
-/*
-
-        // Set image using Picasso library
-        Picasso.with(mContext).setIndicatorsEnabled(true);
-        Picasso.with(mContext)
-                .load(listMovies.get(position).getUrlPoster())
-                .placeholder(R.drawable.placeholder)
-                .resize(100, 100)
-                .centerCrop()
-                .into(viewHolder.moviePoster);
-*/
-
-        viewHolder.mLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Intent intent = new Intent(mContext, MyMapActivity.class);
-                if (listPlaces.get(position).getPlaceLocation() != null) {
-                    intent.putExtra(UIConstants.LAT, listPlaces.get(position).getPlaceLocation().latitude);
-                    intent.putExtra(UIConstants.LNG, listPlaces.get(position).getPlaceLocation().longitude);
-                }
-                mContext.startActivity(intent);
-/*
-                // transfer ID to MainActivity
-                mEditMovie.editMovie(listMovies.get(position));
-*/
-
-                Toast.makeText(mContext, "onClick", Toast.LENGTH_LONG).show();
+            File imageFile = new  File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    + DBConstants.TEXT_SEARCH_PHOTO_DIR,
+                    cursorPlaces.getString(cursorPlaces.getColumnIndex(DBConstants.PHOTO_LINK)));
+            if(imageFile.exists()){
+                viewHolder.placePhoto.setImageBitmap(BitmapFactory.decodeFile(imageFile.getAbsolutePath()));
             }
 
-        });
+            viewHolder.mLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
-        viewHolder.mLayout.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-
-                final View.OnClickListener clickListener = new View.OnClickListener() {
-                    public void onClick(View v) {
-/*
-                        listMovies.remove(position);
-                        notifyDataSetChanged();
-*/
+                    Intent intent = new Intent(mContext, MyMapActivity.class);
+                    if (cursorPlaces.getDouble(cursorPlaces.getColumnIndex(DBConstants.LAT)) != 0) {
+                        intent.putExtra(UIConstants.LAT,
+                                cursorPlaces.getDouble(cursorPlaces.getColumnIndex(DBConstants.LAT)));
+                        intent.putExtra(UIConstants.LNG,
+                                cursorPlaces.getDouble(cursorPlaces.getColumnIndex(DBConstants.LNG)));
                     }
-                };
+                    mContext.startActivity(intent);
+                }
 
-                Snackbar.make(mView, "Delete " + listPlaces.get(position).getPlaceName() + "?",
-                        Snackbar.LENGTH_LONG).setAction("Ok", clickListener).show();
+            });
 
-                return true;
-            }
-        });
+            viewHolder.mLayout.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
 
+                    final View.OnClickListener clickListener = new View.OnClickListener() {
+                        public void onClick(View v) {
+                        }
+                    };
+
+                    Snackbar.make(mView, "Delete "
+                                    + cursorPlaces.getString(cursorPlaces.getColumnIndex(DBConstants.NAME))
+                                    + "?",
+                            Snackbar.LENGTH_LONG).setAction("Ok", clickListener).show();
+
+                    return true;
+                }
+            });
+        }
     }
 
 
     // Return the total count of items
     @Override
     public int getItemCount() {
-        return listPlaces.size();
+        if (cursorPlaces == null)
+            return 0;
+        else
+            return cursorPlaces.getCount();
     }
 
 }
