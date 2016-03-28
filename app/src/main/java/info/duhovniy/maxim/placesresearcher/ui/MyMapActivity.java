@@ -77,19 +77,11 @@ public class MyMapActivity extends AppCompatActivity implements OnStreetViewPano
                 switch (menuItem.getItemId()) {
                     case R.id.drawer_search:
                         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-//                        viewPager.setCurrentItem(0);
                         break;
                     case R.id.drawer_edit:
                         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_OPEN);
-//                        viewPager.setCurrentItem(1);
-                        break;
-                    case R.id.drawer_base:
-                        drawerLayout.closeDrawers();
-//                        viewPager.setCurrentItem(2);
                         break;
                 }
-
-                //
                 return true;
             }
         });

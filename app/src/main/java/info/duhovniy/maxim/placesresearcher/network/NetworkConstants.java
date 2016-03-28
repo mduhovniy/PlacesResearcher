@@ -39,18 +39,22 @@ public class NetworkConstants {
 
     public static final String TEXT_QUERY = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=";
     public static final String NEAR_QUERY = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=";
-    public static final String TYPE_QUERY = "&type";
+    public static final String TYPE_QUERY = "&type=";
+    public static final String KEYWORD_QUERY = "&keyword=";
+    public static final String RADIUS_QUERY = "&radius=";
+
     public static final String KEY = "&key=";
 
     public static final String PHOTO_QUERY = "https://maps.googleapis.com/maps/api/place/photo?maxwidth="
             + UIConstants.PHOTO_SIZE + "&photoreference=";
 
     public static final String REQUEST_STRING = "info.duhovniy.maxim.placesresearcher.REQUEST_STRING";
+    public static final String REQUEST_TYPE = "info.duhovniy.maxim.placesresearcher.REQUEST_TYPE";
+    public static final String REQUEST_LAT = "info.duhovniy.maxim.placesresearcher.REQUEST_LAT";
+    public static final String REQUEST_LNG = "info.duhovniy.maxim.placesresearcher.REQUEST_LNG";
+
     public static final String RESPONSE_MESSAGE = "info.duhovniy.maxim.placesresearcher.RESPONSE_MESSAGE";
-    public static final String RESPONSE_LIST = "info.duhovniy.maxim.placesresearcher.RESPONSE_LIST";
-    public static final String AUTOCOMPLETE_SEARCH = "info.duhovniy.maxim.placesresearcher.AUTOCOMPLETE_SEARCH";
     public static final String NEARBY_SEARCH = "info.duhovniy.maxim.placesresearcher.NEARBY_SEARCH";
-    public static final String RADAR_SEARCH = "info.duhovniy.maxim.placesresearcher.RADAR_SEARCH";
     public static final String TEXT_SEARCH = "info.duhovniy.maxim.placesresearcher.TEXT_SEARCH";
 
     public static String sendHttpRequest(String urlString) {

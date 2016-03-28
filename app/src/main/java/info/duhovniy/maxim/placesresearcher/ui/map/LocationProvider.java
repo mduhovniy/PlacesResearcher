@@ -56,7 +56,7 @@ public class LocationProvider implements
         mLocationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(10 * 1000)        // 10 seconds, in milliseconds
-                .setFastestInterval(1000); // 1 second, in milliseconds
+                .setFastestInterval(1 * 1000); // 1 second, in milliseconds
 
         mContext = context;
     }
@@ -79,7 +79,7 @@ public class LocationProvider implements
 /*
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (location == null) { */
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
 /*        } else {
             mLocationCallback.handleNewLocation(location);
         }

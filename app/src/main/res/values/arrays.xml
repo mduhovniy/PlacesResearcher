@@ -104,7 +104,7 @@
         <item name="zoo">zoo</item>
     </string-array>
     <string-array name="place_type">
-        <item name="NA"></item>
+        <item name="NA">NA</item>
         <item name="accounting">accounting</item>
         <item name="airport">airport</item>
         <item name="amusement park">amusement_park</item>

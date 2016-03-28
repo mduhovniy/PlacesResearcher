@@ -1,7 +1,6 @@
 package info.duhovniy.maxim.placesresearcher.ui;
 
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
@@ -19,12 +18,18 @@ import java.io.File;
 
 import info.duhovniy.maxim.placesresearcher.R;
 import info.duhovniy.maxim.placesresearcher.db.DBConstants;
+import info.duhovniy.maxim.placesresearcher.db.DBHandler;
 
 public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.RecyclerViewHolder> {
 
+    private AdapterInterface mItemListener;
     private Cursor cursorPlaces = null;
     private View mView;
     private Context mContext;
+
+    public interface AdapterInterface {
+        void itemPressed(int position);
+    }
 
     // Provide a direct reference to each of the views within a data item
     // Used to cache the views within the item layout for fast access
@@ -52,9 +57,11 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Re
         }
     }
 
-    public SearchListAdapter(View v, Context context) {
+    public SearchListAdapter(View v, AdapterInterface itemListener, Context context) {
         mView = v;
+        mItemListener = itemListener;
         mContext = context;
+
     }
 
     public void updateList(Cursor cursor) {
@@ -87,6 +94,17 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Re
                     + DBConstants.TEXT_SEARCH_PHOTO_DIR,
                     cursorPlaces.getString(cursorPlaces.getColumnIndex(DBConstants.PHOTO_LINK)));
             if(imageFile.exists()){
+
+/*
+                // Set image using Picasso library
+                Picasso.with(mContext)
+                        .load(imageFile)
+                        .placeholder(R.drawable.placeholder)
+                        .resize(150, 150)
+                        .centerCrop()
+                        .into(viewHolder.placePhoto);
+*/
+
                 viewHolder.placePhoto.setImageBitmap(BitmapFactory.decodeFile(imageFile.getAbsolutePath()));
             }
 
@@ -94,14 +112,8 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Re
                 @Override
                 public void onClick(View v) {
 
-                    Intent intent = new Intent(mContext, MyMapActivity.class);
-                    if (cursorPlaces.getDouble(cursorPlaces.getColumnIndex(DBConstants.LAT)) != 0) {
-                        intent.putExtra(UIConstants.LAT,
-                                cursorPlaces.getDouble(cursorPlaces.getColumnIndex(DBConstants.LAT)));
-                        intent.putExtra(UIConstants.LNG,
-                                cursorPlaces.getDouble(cursorPlaces.getColumnIndex(DBConstants.LNG)));
-                    }
-                    mContext.startActivity(intent);
+                    mItemListener.itemPressed(position);
+
                 }
 
             });
@@ -112,12 +124,20 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Re
 
                     final View.OnClickListener clickListener = new View.OnClickListener() {
                         public void onClick(View v) {
+                            DBHandler db = new DBHandler(mContext);
+                            int rowNumber = db.deleteLastSearchItem(cursorPlaces
+                                    .getInt(cursorPlaces.getColumnIndex(DBConstants.ID)));
+                            cursorPlaces = db.getLastSearch();
+                            notifyDataSetChanged();
+                            Snackbar.make(mView, "#" + rowNumber + " places stored to favorite",
+                                    Snackbar.LENGTH_LONG).show();
                         }
                     };
 
-                    Snackbar.make(mView, "Delete "
+                    cursorPlaces.moveToPosition(position);
+                    Snackbar.make(mView, "Store "
                                     + cursorPlaces.getString(cursorPlaces.getColumnIndex(DBConstants.NAME))
-                                    + "?",
+                                    + " to favorites?",
                             Snackbar.LENGTH_LONG).setAction("Ok", clickListener).show();
 
                     return true;

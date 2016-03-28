@@ -14,7 +14,7 @@ import info.duhovniy.maxim.placesresearcher.network.NetworkConstants;
 
 public class SearchServiceText extends IntentService {
 
-     /**
+    /**
      * Creates an IntentService.  Invoked by your subclass's constructor.
      */
     public SearchServiceText() {
@@ -23,6 +23,7 @@ public class SearchServiceText extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+
         int resultsNumber = 0;
 
         if (intent.hasExtra(NetworkConstants.REQUEST_STRING)) {

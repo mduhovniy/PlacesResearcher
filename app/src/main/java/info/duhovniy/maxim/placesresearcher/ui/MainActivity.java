@@ -6,9 +6,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -20,31 +22,48 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import info.duhovniy.maxim.placesresearcher.R;
 import info.duhovniy.maxim.placesresearcher.network.NetworkConstants;
+import info.duhovniy.maxim.placesresearcher.network.Place;
+import info.duhovniy.maxim.placesresearcher.network.search.SearchServiceNearby;
 import info.duhovniy.maxim.placesresearcher.network.search.SearchServiceText;
+import info.duhovniy.maxim.placesresearcher.ui.map.LocationProvider;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,
+        ControlFragment.ControlInterface, LocationProvider.LocationCallback {
 
     private MyMapFragment mapFragment;
     private ControlFragment controlFragment;
 
+    private View mView;
+
     private PlaceSearchReceiver placeSearchReceiver;
     private PowerConnectionReceiver powerConnectionReceiver;
 
-    private Toolbar toolbar;
+    private String searchType;
+    private Switch searchSwitch;
+    private Location mLocation;
+    private LocationProvider mLocationProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mView = findViewById(R.id.main_layout);
+        mLocationProvider = new LocationProvider(this, this);
 
-        toolbar = (Toolbar) findViewById(R.id.app_bar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
+        toolbar.setTitle(null);
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-//        setUpSpinner();
+        searchSwitch = (Switch) findViewById(R.id.switch_local);
+
+        setUpSpinner();
 
         checkGPS();
 
@@ -55,14 +74,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         fragmentManager.beginTransaction().replace(R.id.control_fragment_container,
                 controlFragment, UIConstants.CONTROL_FRAGMENT).commit();
+        controlFragment.setPlaceListener(this);
 
         if (findViewById(R.id.map_fragment_container) != null) {
             fragmentManager.beginTransaction().replace(R.id.map_fragment_container,
                     mapFragment, UIConstants.MAP_FRAGMENT).commit();
         }
-
-        // Get the intent, verify the action and get the query
-        handleIntent(getIntent());
     }
 
     @Override
@@ -75,7 +92,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            doMySearch(query);
+            if (searchSwitch.isChecked())
+                doMySearch(query, searchType);
+            else
+                doMySearch(query);
         }
     }
 
@@ -97,6 +117,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
+        if(id == R.id.action_faivorite)
+            item.setIcon(android.R.drawable.btn_star_big_on);
         return super.onOptionsItemSelected(item);
     }
 
@@ -133,22 +155,38 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         placeSearchReceiver = getRegisteredReceiver();
         powerConnectionReceiver = getPowerConnectionReceiver();
+        mLocationProvider.connect();
     }
 
     @Override
     protected void onPause() {
         unregisterReceiver(powerConnectionReceiver);
         unregisterReceiver(placeSearchReceiver);
+        mLocationProvider.disconnect();
 
         super.onPause();
     }
 
+    // text search service running
     public void doMySearch(String query) {
 
         Intent intent = new Intent();
         intent.putExtra(NetworkConstants.REQUEST_STRING, query);
 
         intent.setClass(MainActivity.this, SearchServiceText.class);
+        startService(intent);
+    }
+
+    // nearby search service running
+    public void doMySearch(String query, String type) {
+
+        Intent intent = new Intent();
+        intent.putExtra(NetworkConstants.REQUEST_STRING, query);
+        intent.putExtra(NetworkConstants.REQUEST_TYPE, type);
+        intent.putExtra(NetworkConstants.REQUEST_LAT, mLocation.getLatitude());
+        intent.putExtra(NetworkConstants.REQUEST_LNG, mLocation.getLongitude());
+
+        intent.setClass(MainActivity.this, SearchServiceNearby.class);
         startService(intent);
     }
 
@@ -175,10 +213,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         // On selecting a spinner item
-        String item = getResources().getStringArray(R.array.place_type)[position];
+        searchType = getResources().getStringArray(R.array.place_type)[position];
 
         // Showing selected spinner item
-        Toast.makeText(parent.getContext(), "Selected: " + item, Toast.LENGTH_LONG).show();
+        Toast.makeText(parent.getContext(), "Selected: " + searchType, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -213,6 +251,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         alert.show();
     }
 
+    @Override
+    public void onPlaceListener(Place place) {
+        if (!mapFragment.isVisible() && findViewById(R.id.map_fragment_container) == null)
+            getSupportFragmentManager().beginTransaction().replace(R.id.control_fragment_container,
+                    mapFragment, UIConstants.CONTROL_FRAGMENT).addToBackStack(null).commit();
+
+        mapFragment.showPlace(place);
+    }
+
+    @Override
+    public void handleNewLocation(Location location) {
+        if (mLocation == null)
+            Snackbar.make(mView, "Your location is found!", Snackbar.LENGTH_LONG).show();
+        mLocation = location;
+    }
+
     private class PlaceSearchReceiver extends BroadcastReceiver {
 
         public PlaceSearchReceiver() {
@@ -221,29 +275,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            if(intent.hasExtra(NetworkConstants.RESPONSE_MESSAGE))
-                Toast.makeText(getApplicationContext(), "Found "
+            if (intent.hasExtra(NetworkConstants.RESPONSE_MESSAGE))
+                Toast.makeText(context, "Found "
                         + intent.getIntExtra(NetworkConstants.RESPONSE_MESSAGE, -1)
                         + " places!", Toast.LENGTH_SHORT).show();
             if (controlFragment != null) {
                 controlFragment.onResultListChange();
             }
-/*
-            switch (intent.getAction()) {
-                case NetworkConstants.AUTOCOMPLETE_SEARCH:
-                    //TODO:
-                    break;
-                case NetworkConstants.TEXT_SEARCH:
-                    //TODO:
-                    break;
-                case NetworkConstants.RADAR_SEARCH:
-                    //TODO:
-                    break;
-                case NetworkConstants.NEARBY_SEARCH:
-                    //TODO:
-                    break;
+
+            if (mapFragment.isVisible()) {
+                mapFragment.setUpCluster();
             }
-*/
         }
     }
 }

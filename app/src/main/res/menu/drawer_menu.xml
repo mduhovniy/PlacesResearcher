@@ -13,11 +13,6 @@
             android:title="@string/edit_header"
             android:icon="@android:drawable/ic_secure"/>
 
-        <item
-            android:id="@+id/drawer_base"
-            android:title="@string/base_header"
-            android:icon="@android:drawable/ic_menu_close_clear_cancel"/>
-
     </group>
 
 </menu>

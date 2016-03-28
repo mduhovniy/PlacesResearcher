@@ -5,8 +5,6 @@ import android.os.Parcelable;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import java.util.ArrayList;
-
 /**
  * Created by maxduhovniy on 15/12/2015.
  */
@@ -15,16 +13,11 @@ public class Place implements Parcelable {
     private String placeID;
     private LatLng placeLocation;
     private String placeName;
-
-    private String formattedAddress;
-    private String formattedPhoneNumber;
-    private ArrayList<String> types;
-    private String websiteUrl;
-
-    private String photoReference;
-    private String mapsUrl;
-
-    private String vicinity;
+    private String placeAddress;
+    private String placePhoneNumber;
+    private String placeType;
+    private String placeWebsiteUrl;
+    private String placePhotoReference;
 
     public Place(String placeID) {
         this.placeID = placeID;
@@ -34,13 +27,11 @@ public class Place implements Parcelable {
         placeID = in.readString();
         placeLocation = in.readParcelable(LatLng.class.getClassLoader());
         placeName = in.readString();
-        formattedAddress = in.readString();
-        formattedPhoneNumber = in.readString();
-        types = in.createStringArrayList();
-        websiteUrl = in.readString();
-        photoReference = in.readString();
-        mapsUrl = in.readString();
-        vicinity = in.readString();
+        placeAddress = in.readString();
+        placePhoneNumber = in.readString();
+        placeType = in.readString();
+        placeWebsiteUrl = in.readString();
+        placePhotoReference = in.readString();
     }
 
     public static final Creator<Place> CREATOR = new Creator<Place>() {
@@ -59,6 +50,10 @@ public class Place implements Parcelable {
         return placeID;
     }
 
+    public void setPlaceID(String placeID) {
+        this.placeID = placeID;
+    }
+
     public LatLng getPlaceLocation() {
         return placeLocation;
     }
@@ -75,65 +70,44 @@ public class Place implements Parcelable {
         this.placeName = placeName;
     }
 
-    public String getFormattedAddress() {
-        return formattedAddress;
+    public String getPlaceAddress() {
+        return placeAddress;
     }
 
-    public void setFormattedAddress(String formattedAddress) {
-        this.formattedAddress = formattedAddress;
+    public void setPlaceAddress(String placeAddress) {
+        this.placeAddress = placeAddress;
     }
 
-    public String getFormattedPhoneNumber() {
-        return formattedPhoneNumber;
+    public String getPlacePhoneNumber() {
+        return placePhoneNumber;
     }
 
-    public void setFormattedPhoneNumber(String formattedPhoneNumber) {
-        this.formattedPhoneNumber = formattedPhoneNumber;
+    public void setPlacePhoneNumber(String placePhoneNumber) {
+        this.placePhoneNumber = placePhoneNumber;
     }
 
-    public ArrayList<String> getTypes() {
-        return types;
+    public String getPlaceType() {
+        return placeType;
     }
 
-    public void setTypes(ArrayList<String> types) {
-        this.types = types;
+    public void setPlaceType(String placeType) {
+        this.placeType = placeType;
     }
 
-    public String getWebsiteUrl() {
-        return websiteUrl;
+    public String getPlaceWebsiteUrl() {
+        return placeWebsiteUrl;
     }
 
-    public void setWebsiteUrl(String websiteUrl) {
-        this.websiteUrl = websiteUrl;
+    public void setPlaceWebsiteUrl(String placeWebsiteUrl) {
+        this.placeWebsiteUrl = placeWebsiteUrl;
     }
 
-    public String getPhotoReference() {
-        return photoReference;
+    public String getPlacePhotoReference() {
+        return placePhotoReference;
     }
 
-    public void setPhotoReference(String photoReference) {
-        this.photoReference = photoReference;
-    }
-
-    public String getMapsUrl() {
-        return mapsUrl;
-    }
-
-    public void setMapsUrl(String mapsUrl) {
-        this.mapsUrl = mapsUrl;
-    }
-
-    public String getVicinity() {
-        return vicinity;
-    }
-
-    public void setVicinity(String vicinity) {
-        this.vicinity = vicinity;
-    }
-
-    @Override
-    public String toString() {
-        return placeName;
+    public void setPlacePhotoReference(String placePhotoReference) {
+        this.placePhotoReference = placePhotoReference;
     }
 
     @Override
@@ -146,12 +120,10 @@ public class Place implements Parcelable {
         dest.writeString(placeID);
         dest.writeParcelable(placeLocation, flags);
         dest.writeString(placeName);
-        dest.writeString(formattedAddress);
-        dest.writeString(formattedPhoneNumber);
-        dest.writeStringList(types);
-        dest.writeString(websiteUrl);
-        dest.writeString(photoReference);
-        dest.writeString(mapsUrl);
-        dest.writeString(vicinity);
+        dest.writeString(placeAddress);
+        dest.writeString(placePhoneNumber);
+        dest.writeString(placeType);
+        dest.writeString(placeWebsiteUrl);
+        dest.writeString(placePhotoReference);
     }
 }

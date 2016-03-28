@@ -19,5 +19,6 @@
     <string name="settings_unit_km">Kilometers</string>
     <string name="settings_unit_miles">Miles</string>
     <string name="GPS_check_response">Your GPS seems to be disabled, do you want to enable it?</string>
+    <string name="switch_text">local</string>
 
 </resources>

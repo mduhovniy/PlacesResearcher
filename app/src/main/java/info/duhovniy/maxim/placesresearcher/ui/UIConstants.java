@@ -11,5 +11,6 @@ public class UIConstants {
     public static final String LAT = "info.duhovniy.maxim.placesresearcher.LAT";
     public static final String LNG = "info.duhovniy.maxim.placesresearcher.LNG";
     public static final int PHOTO_SIZE = 300;
+    public static final String RADIUS = "searchRadius";
 
 }
