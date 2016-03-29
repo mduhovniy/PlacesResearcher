@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:padding="5dp">
 
@@ -14,10 +14,10 @@
         card_view:elevation="10dp">
 
         <LinearLayout
+            android:id="@+id/line_place"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:id="@+id/line_place"
             android:padding="5dp">
 
             <ImageView
@@ -26,7 +26,7 @@
                 android:layout_height="150dp"
                 android:layout_gravity="center|top"
                 android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"/>
+                android:layout_marginRight="5dp" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -39,15 +39,26 @@
                     android:layout_height="wrap_content"
                     android:gravity="start"
                     android:textSize="20sp"
-                    tools:text="Place Name"/>
+                    tools:text="Place Name" />
 
                 <TextView
                     android:id="@+id/place_address_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="start"
-                    tools:text="address"/>
+                    tools:text="address" />
 
+                <ToggleButton
+                    android:id="@+id/toggle_favorite"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="end|bottom"
+                    android:layout_margin="3dp"
+                    android:background="@drawable/check_favorite"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:textOff=""
+                    android:textOn="" />
 
             </LinearLayout>
 

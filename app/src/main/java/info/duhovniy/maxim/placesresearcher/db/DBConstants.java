@@ -40,5 +40,5 @@ public class DBConstants {
 
     public static final String[] TABLES = new String[]{LAST_SEARCH_TABLE, FAVORITE_TABLE};
 
-    public static final String TEXT_SEARCH_PHOTO_DIR = "/SearchPhotos";
+    public static final String SEARCH_PHOTO_DIR = "/SearchPhotos";
 }

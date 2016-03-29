@@ -1,6 +1,5 @@
 package info.duhovniy.maxim.placesresearcher.ui;
 
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -10,10 +9,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.gms.maps.model.LatLng;
+import java.util.ArrayList;
 
 import info.duhovniy.maxim.placesresearcher.R;
-import info.duhovniy.maxim.placesresearcher.db.DBConstants;
 import info.duhovniy.maxim.placesresearcher.db.DBHandler;
 import info.duhovniy.maxim.placesresearcher.network.Place;
 
@@ -22,7 +20,7 @@ public class ControlFragment extends Fragment implements SearchListAdapter.Adapt
     private SearchListAdapter searchListAdapter;
     private RecyclerView resultRecyclerView;
     private SwipeRefreshLayout swipeContainer;
-    private Cursor lastSearchCursor;
+    private ArrayList<Place> mList;
     private ControlInterface mPlaceListener;
 
     private static ControlFragment instance = null;
@@ -77,36 +75,14 @@ public class ControlFragment extends Fragment implements SearchListAdapter.Adapt
 
     public void onResultListChange() {
         DBHandler db = new DBHandler(getContext());
-        lastSearchCursor = db.getLastSearch();
-        searchListAdapter.updateList(lastSearchCursor);
+        mList = db.getLastSearch();
+        searchListAdapter.updateList(mList);
         resultRecyclerView.setAdapter(searchListAdapter);
         swipeContainer.setRefreshing(false);
     }
 
     @Override
     public void itemPressed(int position) {
-        if(lastSearchCursor.moveToPosition(position)) {
-            Place place = new Place(lastSearchCursor.getString(lastSearchCursor.getColumnIndex(DBConstants.ID)));
-            place.setPlaceAddress(lastSearchCursor.getString(lastSearchCursor.getColumnIndex(DBConstants.ADDRESS)));
-            place.setPlaceName(lastSearchCursor.getString(lastSearchCursor.getColumnIndex(DBConstants.NAME)));
-            place.setPlaceLocation(new LatLng(lastSearchCursor.getDouble(lastSearchCursor.getColumnIndex(DBConstants.LAT)),
-                    lastSearchCursor.getDouble(lastSearchCursor.getColumnIndex(DBConstants.LNG))));
-//            place.setPlacePhoneNumber(lastSearchCursor.getString(lastSearchCursor.getColumnIndex(DBConstants.PHONE)));
-            place.setPlacePhotoReference(lastSearchCursor.getString(lastSearchCursor.getColumnIndex(DBConstants.PHOTO_LINK)));
-//            place.setPlaceWebsiteUrl(lastSearchCursor.getString(lastSearchCursor.getColumnIndex(DBConstants.WEB_SITE)));
-
-            mPlaceListener.onPlaceListener(place);
-        }
-
-/*
-        Intent intent = new Intent(getContext(), MyMapActivity.class);
-        if (lastSearchCursor.getDouble(lastSearchCursor.getColumnIndex(DBConstants.LAT)) != 0) {
-            intent.putExtra(UIConstants.LAT,
-                    lastSearchCursor.getDouble(lastSearchCursor.getColumnIndex(DBConstants.LAT)));
-            intent.putExtra(UIConstants.LNG,
-                    lastSearchCursor.getDouble(lastSearchCursor.getColumnIndex(DBConstants.LNG)));
-        }
-        getContext().startActivity(intent);
-*/
+            mPlaceListener.onPlaceListener(mList.get(position));
     }
 }

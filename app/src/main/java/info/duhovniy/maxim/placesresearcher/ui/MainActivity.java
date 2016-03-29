@@ -48,9 +48,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private Location mLocation;
     private LocationProvider mLocationProvider;
 
+    // becomes true if Favorite List is visible
+    private boolean isFavorite;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Check whether we're recreating a previously destroyed instance
+        // Restore value of members from saved state
+        isFavorite = savedInstanceState != null && savedInstanceState.getBoolean(UIConstants.FAVORITE_FLAG);
+
         setContentView(R.layout.activity_main);
         mView = findViewById(R.id.main_layout);
         mLocationProvider = new LocationProvider(this, this);
@@ -80,6 +87,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             fragmentManager.beginTransaction().replace(R.id.map_fragment_container,
                     mapFragment, UIConstants.MAP_FRAGMENT).commit();
         }
+
+        if (mapFragment.isVisible()) {
+            mapFragment.setUpCluster();
+        }
     }
 
     @Override
@@ -92,12 +103,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            if (searchSwitch.isChecked())
-                doMySearch(query, searchType);
-            else
+            if (searchSwitch.isChecked()) {
+                if (mLocation != null)
+                    doMySearch(query, searchType);
+                else
+                    Snackbar.make(mView, "Location has not yet been found!", Snackbar.LENGTH_LONG).show();
+            } else
                 doMySearch(query);
         }
     }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean(UIConstants.FAVORITE_FLAG, isFavorite);
+        super.onSaveInstanceState(outState);
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -110,6 +131,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
 
+        MenuItem item = menu.findItem(R.id.action_faivorite);
+        if (isFavorite) {
+            item.setIcon(android.R.drawable.btn_star_big_on);
+        } else {
+            item.setIcon(android.R.drawable.btn_star_big_off);
+        }
+
         return true;
     }
 
@@ -117,8 +145,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if(id == R.id.action_faivorite)
-            item.setIcon(android.R.drawable.btn_star_big_on);
+        if (id == R.id.action_faivorite) {
+            if (isFavorite) {
+                isFavorite = false;
+                item.setIcon(android.R.drawable.btn_star_big_off);
+            } else {
+                isFavorite = true;
+                item.setIcon(android.R.drawable.btn_star_big_on);
+            }
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -210,18 +245,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         spinner.setAdapter(dataAdapter);
     }
 
+    // search type spin listener
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         // On selecting a spinner item
         searchType = getResources().getStringArray(R.array.place_type)[position];
 
         // Showing selected spinner item
-        Toast.makeText(parent.getContext(), "Selected: " + searchType, Toast.LENGTH_LONG).show();
+        // Toast.makeText(parent.getContext(), "Selected: " + searchType, Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
-        Toast.makeText(parent.getContext(), "Selected: NOTHING", Toast.LENGTH_LONG).show();
+        // Toast.makeText(parent.getContext(), "Selected: NOTHING", Toast.LENGTH_LONG).show();
     }
 
     private void checkGPS() {
@@ -256,7 +292,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (!mapFragment.isVisible() && findViewById(R.id.map_fragment_container) == null)
             getSupportFragmentManager().beginTransaction().replace(R.id.control_fragment_container,
                     mapFragment, UIConstants.CONTROL_FRAGMENT).addToBackStack(null).commit();
-
         mapFragment.showPlace(place);
     }
 

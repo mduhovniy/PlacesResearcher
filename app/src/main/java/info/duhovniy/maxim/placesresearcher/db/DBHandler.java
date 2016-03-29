@@ -10,13 +10,17 @@ import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import info.duhovniy.maxim.placesresearcher.network.NetworkConstants;
+import info.duhovniy.maxim.placesresearcher.network.Place;
 
 /**
  * Created by maxduhovniy on 25/02/2016.
@@ -37,7 +41,7 @@ public class DBHandler {
         SQLiteDatabase db = helper.getWritableDatabase();
 
         String folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                + DBConstants.TEXT_SEARCH_PHOTO_DIR;
+                + DBConstants.SEARCH_PHOTO_DIR;
         File dir = new File(folder);
         if (!dir.exists()) {
             if (dir.mkdirs()) {
@@ -112,7 +116,7 @@ public class DBHandler {
         SQLiteDatabase db = helper.getWritableDatabase();
 
         String folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                + DBConstants.TEXT_SEARCH_PHOTO_DIR;
+                + DBConstants.SEARCH_PHOTO_DIR;
         File dir = new File(folder);
         if (!dir.exists()) {
             if (dir.mkdirs()) {
@@ -182,8 +186,9 @@ public class DBHandler {
     }
 
     // returns a cursor with all Last Search Results
-    public Cursor getLastSearch() {
+    public ArrayList<Place> getLastSearch() {
         Cursor cursor = null;
+        ArrayList<Place> result = new ArrayList<>();
         SQLiteDatabase db = helper.getReadableDatabase();
 
         try {
@@ -192,17 +197,39 @@ public class DBHandler {
         } catch (SQLiteException e) {
             e.printStackTrace();
         }
-        return cursor;
+        if (cursor != null) {
+
+            cursor.moveToFirst();
+
+            while (!cursor.isAfterLast()) {
+
+                Place place = new Place();
+
+                place.setPlaceName(cursor.getString(cursor.getColumnIndex(DBConstants.NAME)));
+                place.setPlaceID(cursor.getString(cursor.getColumnIndex(DBConstants.PLACE_ID)));
+                place.setPlaceLocation(new LatLng(cursor.getDouble(cursor.getColumnIndex(DBConstants.LAT)),
+                        cursor.getDouble(cursor.getColumnIndex(DBConstants.LNG))));
+                place.setPlacePhotoReference(cursor.getString(cursor.getColumnIndex(DBConstants.PHOTO_LINK)));
+                place.setPlaceAddress(cursor.getString(cursor.getColumnIndex(DBConstants.ADDRESS)));
+                place.setPlaceType(cursor.getString(cursor.getColumnIndex(DBConstants.TYPE)));
+
+                result.add(place);
+                cursor.moveToNext();
+            }
+            cursor.close();
+        } else
+            result = null;
+        return result;
     }
 
     // returns a number of deleted rows from Last Search Results table
-    public int deleteLastSearchItem(int id) {
+    public int deleteLastSearchItem(String id) {
         int res = 0;
         SQLiteDatabase db = helper.getWritableDatabase();
 
         try {
-            res = db.delete(DBConstants.LAST_SEARCH_TABLE, DBConstants.ID + "=?",
-                    new String[]{String.valueOf(id)});
+            res = db.delete(DBConstants.LAST_SEARCH_TABLE, DBConstants.PLACE_ID + "=?",
+                    new String[]{id});
         } catch (SQLiteException e) {
             e.getMessage();
         } finally {
@@ -227,7 +254,7 @@ public class DBHandler {
                 .setTitle("Place Photo Loader")
                 .setDescription(fileName)
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS
-                        + DBConstants.TEXT_SEARCH_PHOTO_DIR, fileName);
+                        + DBConstants.SEARCH_PHOTO_DIR, fileName);
 
         mgr.enqueue(request);
 

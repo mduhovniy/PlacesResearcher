@@ -4,11 +4,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.clustering.ClusterItem;
 
 /**
  * Created by maxduhovniy on 15/12/2015.
  */
-public class Place implements Parcelable {
+public class Place implements Parcelable, ClusterItem {
 
     private String placeID;
     private LatLng placeLocation;
@@ -18,6 +19,9 @@ public class Place implements Parcelable {
     private String placeType;
     private String placeWebsiteUrl;
     private String placePhotoReference;
+
+    public Place() {
+    }
 
     public Place(String placeID) {
         this.placeID = placeID;
@@ -125,5 +129,10 @@ public class Place implements Parcelable {
         dest.writeString(placeType);
         dest.writeString(placeWebsiteUrl);
         dest.writeString(placePhotoReference);
+    }
+
+    @Override
+    public LatLng getPosition() {
+        return placeLocation;
     }
 }

@@ -16,9 +16,12 @@ import info.duhovniy.maxim.placesresearcher.ui.UIConstants;
  */
 public class NetworkConstants {
 
+    // Google Place Search API key
     public static final String WEB_API_KEY = "AIzaSyB2LrzIvoYmQb3kmbMcdMwmoXQ4b9gtlyc";
+
     public static final String LOG_TAG = "Network.LOG";
 
+    // Place Search API JSON result TAGs
     public static final String RESULTS_HEADER = "results";
 
     public static final String PLACE_ID = "place_id";
@@ -37,16 +40,18 @@ public class NetworkConstants {
     public static final String PHOTOS_HEADER = "photos";
     public static final String PHOTO_REF = "photo_reference";
 
+    // Place Search API WEB place search request parts
     public static final String TEXT_QUERY = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=";
     public static final String NEAR_QUERY = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=";
     public static final String TYPE_QUERY = "&type=";
     public static final String KEYWORD_QUERY = "&keyword=";
     public static final String RADIUS_QUERY = "&radius=";
 
-    public static final String KEY = "&key=";
-
+    // Place Search API WEB lace photo download request
     public static final String PHOTO_QUERY = "https://maps.googleapis.com/maps/api/place/photo?maxwidth="
             + UIConstants.PHOTO_SIZE + "&photoreference=";
+
+    public static final String KEY = "&key=";
 
     public static final String REQUEST_STRING = "info.duhovniy.maxim.placesresearcher.REQUEST_STRING";
     public static final String REQUEST_TYPE = "info.duhovniy.maxim.placesresearcher.REQUEST_TYPE";
