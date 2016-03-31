@@ -22,9 +22,7 @@ import java.util.ArrayList;
 import info.duhovniy.maxim.placesresearcher.network.NetworkConstants;
 import info.duhovniy.maxim.placesresearcher.network.Place;
 
-/**
- * Created by maxduhovniy on 25/02/2016.
- */
+
 public class DBHandler {
 
     private DBHelper helper;

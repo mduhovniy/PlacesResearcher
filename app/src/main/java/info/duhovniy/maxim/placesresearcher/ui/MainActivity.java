@@ -10,8 +10,10 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -23,7 +25,13 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.maps.OnStreetViewPanoramaReadyCallback;
+import com.google.android.gms.maps.StreetViewPanorama;
+import com.google.android.gms.maps.SupportStreetViewPanoramaFragment;
+import com.google.android.gms.maps.model.LatLng;
 
 import info.duhovniy.maxim.placesresearcher.R;
 import info.duhovniy.maxim.placesresearcher.network.NetworkConstants;
@@ -33,12 +41,16 @@ import info.duhovniy.maxim.placesresearcher.network.search.SearchServiceText;
 import info.duhovniy.maxim.placesresearcher.ui.map.LocationProvider;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,
-        ControlFragment.ControlInterface, LocationProvider.LocationCallback {
+        ControlFragment.ControlInterface, LocationProvider.LocationCallback,
+        OnStreetViewPanoramaReadyCallback {
 
     private MyMapFragment mapFragment;
     private ControlFragment controlFragment;
+    private FragmentManager fragmentManager;
 
-    private View mView;
+    private DrawerLayout drawerLayout;
+    private NavigationView navView;
+    private View headerView;
 
     private PlaceSearchReceiver placeSearchReceiver;
     private PowerConnectionReceiver powerConnectionReceiver;
@@ -46,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private String searchType;
     private Switch searchSwitch;
     private Location mLocation;
+    private LatLng mLatLng;
     private LocationProvider mLocationProvider;
 
     // becomes true if Favorite List is visible
@@ -59,7 +72,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         isFavorite = savedInstanceState != null && savedInstanceState.getBoolean(UIConstants.FAVORITE_FLAG);
 
         setContentView(R.layout.activity_main);
-        mView = findViewById(R.id.main_layout);
         mLocationProvider = new LocationProvider(this, this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.app_bar);
@@ -77,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         mapFragment = MyMapFragment.getInstance();
         controlFragment = ControlFragment.getInstance();
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager = getSupportFragmentManager();
 
         fragmentManager.beginTransaction().replace(R.id.control_fragment_container,
                 controlFragment, UIConstants.CONTROL_FRAGMENT).commit();
@@ -91,6 +103,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (mapFragment.isVisible()) {
             mapFragment.setUpCluster();
         }
+
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
+
+        navView = (NavigationView) findViewById(R.id.navigation_view);
     }
 
     @Override
@@ -107,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if (mLocation != null)
                     doMySearch(query, searchType);
                 else
-                    Snackbar.make(mView, "Location has not yet been found!", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(drawerLayout, "Location has not yet been found!", Snackbar.LENGTH_LONG).show();
             } else
                 doMySearch(query);
         }
@@ -293,12 +309,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             getSupportFragmentManager().beginTransaction().replace(R.id.control_fragment_container,
                     mapFragment, UIConstants.CONTROL_FRAGMENT).addToBackStack(null).commit();
         mapFragment.showPlace(place);
+        if (navView != null) {
+            setupDrawerContent(navView, place.getPlaceLocation(), place.getPlaceName());
+        }
     }
 
     @Override
     public void handleNewLocation(Location location) {
         if (mLocation == null)
-            Snackbar.make(mView, "Your location is found!", Snackbar.LENGTH_LONG).show();
+            Snackbar.make(drawerLayout, "Your location is found!", Snackbar.LENGTH_LONG).show();
         mLocation = location;
     }
 
@@ -322,5 +341,44 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 mapFragment.setUpCluster();
             }
         }
+    }
+
+    @Override
+    public void onStreetViewPanoramaReady(StreetViewPanorama streetViewPanorama) {
+        streetViewPanorama.setPosition(mLatLng);
+    }
+
+    private void setupDrawerContent(NavigationView navigationView, LatLng latLng, String placeName) {
+
+        mLatLng = latLng;
+
+        if (headerView == null)
+            headerView = navigationView.inflateHeaderView(R.layout.drawer_header);
+
+        TextView headerPlaceName = (TextView) navigationView.findViewById(R.id.street_view_place_name);
+        headerPlaceName.setText(placeName);
+
+        SupportStreetViewPanoramaFragment streetViewPanoramaFragment =
+                (SupportStreetViewPanoramaFragment) fragmentManager
+                        .findFragmentById(R.id.street_view_panorama);
+        streetViewPanoramaFragment.getStreetViewPanoramaAsync(this);
+
+
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(MenuItem menuItem) {
+                menuItem.setChecked(true);
+
+                switch (menuItem.getItemId()) {
+                    case R.id.drawer_search:
+                        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+                        break;
+                    case R.id.drawer_edit:
+                        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_OPEN);
+                        break;
+                }
+                return true;
+            }
+        });
     }
 }

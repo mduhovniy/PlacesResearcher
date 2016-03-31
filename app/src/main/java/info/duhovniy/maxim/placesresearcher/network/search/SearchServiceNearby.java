@@ -14,9 +14,7 @@ import info.duhovniy.maxim.placesresearcher.db.DBHandler;
 import info.duhovniy.maxim.placesresearcher.network.NetworkConstants;
 import info.duhovniy.maxim.placesresearcher.ui.UIConstants;
 
-/**
- * Created by maxduhovniy on 17/12/2015.
- */
+
 public class SearchServiceNearby extends IntentService {
 
     /**
