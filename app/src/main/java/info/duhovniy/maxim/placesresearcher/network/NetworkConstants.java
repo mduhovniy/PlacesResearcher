@@ -11,9 +11,6 @@ import java.net.URL;
 
 import info.duhovniy.maxim.placesresearcher.ui.UIConstants;
 
-/**
- * Created by maxduhovniy on 15/12/2015.
- */
 public class NetworkConstants {
 
     // Google Place Search API key
@@ -49,7 +46,7 @@ public class NetworkConstants {
 
     // Place Search API WEB lace photo download request
     public static final String PHOTO_QUERY = "https://maps.googleapis.com/maps/api/place/photo?maxwidth="
-            + UIConstants.PHOTO_SIZE + "&photoreference=";
+            + UIConstants.PHOTO_SIZE + "&maxheight=" + UIConstants.PHOTO_SIZE + "&photoreference=";
 
     public static final String KEY = "&key=";
 
