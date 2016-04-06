@@ -10,5 +10,9 @@ public class UIConstants {
     public static final int PHOTO_SIZE = 300;   // max width and height for place photo to download
     public static final String RADIUS = "searchRadius";
     public static final String FAVORITE_FLAG = "info.duhovniy.maxim.placesresearcher.FAVORITE_FLAG";
-    public static final int MAP_PHOTO_SIZE = 2;
+    public static final int MAP_PHOTO_SIZE = 3; // it means image scale 1:3
+    public static final int MAX_DISTANCE_KM = 50;
+    public static final int MAX_DISTANCE_MILE = 30;
+    public static final double MILE_TO_KM = 1.60934;
+
 }

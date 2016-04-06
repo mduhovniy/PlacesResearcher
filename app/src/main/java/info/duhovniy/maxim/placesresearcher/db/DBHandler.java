@@ -33,23 +33,14 @@ public class DBHandler {
         mContext = context;
     }
 
-    // Returns number of search results in given JSON result of Text Search
-    public int updateLastTextSearch(JSONObject j) {
+    // Returns number of search results in given JSON result of Text Search if isLocal = false
+    // or Nearby Search if isLocal = true
+    public int updateLastSearch(JSONObject j, boolean isLocal) {
+
         int result = 0;
         SQLiteDatabase db = helper.getWritableDatabase();
 
-        String folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                + DBConstants.SEARCH_PHOTO_DIR;
-        File dir = new File(folder);
-        if (!dir.exists()) {
-            if (dir.mkdirs()) {
-                Log.i(NetworkConstants.LOG_TAG, "Photo Directory Created");
-            }
-        } else {
-            File[] files = dir.listFiles();
-            if (files != null)
-                for (File f : files) f.delete();
-        }
+        cleanUpPhotoDirectory();
 
         db.execSQL("DELETE FROM " + DBConstants.LAST_SEARCH_TABLE);
 
@@ -69,82 +60,12 @@ public class DBHandler {
                             .getJSONObject(NetworkConstants.LOCATION_HEADER).getDouble(NetworkConstants.LAT));
                     values.put(DBConstants.LNG, jsonArray.getJSONObject(i).getJSONObject(NetworkConstants.GEOMETRY_HEADER)
                             .getJSONObject(NetworkConstants.LOCATION_HEADER).getDouble(NetworkConstants.LNG));
-                    values.put(DBConstants.ADDRESS, jsonArray.getJSONObject(i).getString(NetworkConstants.FORMATTED_ADDRESS));
-                    values.put(DBConstants.TYPE, jsonArray.getJSONObject(i).getJSONArray(NetworkConstants.TYPES_HEADER)
-                            .getString(0));
 
-                    String photoRef = jsonArray.getJSONObject(i).getJSONArray(NetworkConstants.PHOTOS_HEADER)
-                            .getJSONObject(0).getString(NetworkConstants.PHOTO_REF);
+                    if(isLocal)
+                        values.put(DBConstants.ADDRESS, jsonArray.getJSONObject(i).getString(NetworkConstants.VICINITY));
+                    else
+                        values.put(DBConstants.ADDRESS, jsonArray.getJSONObject(i).getString(NetworkConstants.FORMATTED_ADDRESS));
 
-                    if (photoRef != null) {
-                        photoRef = NetworkConstants.PHOTO_QUERY
-                                + photoRef
-                                + NetworkConstants.KEY
-                                + NetworkConstants.WEB_API_KEY;
-
-                        String fileName = "TextSearchRes" + (i + 1) + ".jpg";
-
-                        downloadPhoto(photoRef, fileName, mContext);
-
-                        values.put(DBConstants.PHOTO_LINK, fileName);
-                    }
-
-                    if (db.insert(DBConstants.LAST_SEARCH_TABLE, null, values) != -1)
-                        result++;
-                }
-
-//                db.setTransactionSuccessful();
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (SQLiteException e) {
-            e.getMessage();
-        } finally {
-//            db.endTransaction();
-            if (db.isOpen())
-                db.close();
-        }
-
-        return result;
-    }
-
-    // Returns number of search results in given JSON result of Nearby Search
-    public int updateLastNearbySearch(JSONObject j) {
-        int result = 0;
-        SQLiteDatabase db = helper.getWritableDatabase();
-
-        String folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                + DBConstants.SEARCH_PHOTO_DIR;
-        File dir = new File(folder);
-        if (!dir.exists()) {
-            if (dir.mkdirs()) {
-                Log.i(NetworkConstants.LOG_TAG, "Photo Directory Created");
-            }
-        } else {
-            File[] files = dir.listFiles();
-            if (files != null)
-                for (File f : files) f.delete();
-        }
-
-        db.execSQL("DELETE FROM " + DBConstants.LAST_SEARCH_TABLE);
-
-//        db.beginTransactionNonExclusive();
-//        db.beginTransaction();
-
-        try {
-            JSONArray jsonArray = j.getJSONArray(NetworkConstants.RESULTS_HEADER);
-            if (jsonArray != null) {
-
-                for (int i = 0; i < jsonArray.length(); i++) {
-
-                    ContentValues values = new ContentValues();
-                    values.put(DBConstants.NAME, jsonArray.getJSONObject(i).getString(NetworkConstants.NAME));
-                    values.put(DBConstants.PLACE_ID, jsonArray.getJSONObject(i).getString(NetworkConstants.PLACE_ID));
-                    values.put(DBConstants.LAT, jsonArray.getJSONObject(i).getJSONObject(NetworkConstants.GEOMETRY_HEADER)
-                            .getJSONObject(NetworkConstants.LOCATION_HEADER).getDouble(NetworkConstants.LAT));
-                    values.put(DBConstants.LNG, jsonArray.getJSONObject(i).getJSONObject(NetworkConstants.GEOMETRY_HEADER)
-                            .getJSONObject(NetworkConstants.LOCATION_HEADER).getDouble(NetworkConstants.LNG));
-                    values.put(DBConstants.ADDRESS, jsonArray.getJSONObject(i).getString(NetworkConstants.VICINITY));
                     values.put(DBConstants.TYPE, jsonArray.getJSONObject(i).getJSONArray(NetworkConstants.TYPES_HEADER)
                             .getString(0));
 
@@ -235,6 +156,21 @@ public class DBHandler {
                 db.close();
         }
         return res;
+    }
+
+    private void cleanUpPhotoDirectory() {
+        String folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                + DBConstants.SEARCH_PHOTO_DIR;
+        File dir = new File(folder);
+        if (!dir.exists()) {
+            if (dir.mkdirs()) {
+                Log.i(NetworkConstants.LOG_TAG, "Photo Directory Created");
+            }
+        } else {
+            File[] files = dir.listFiles();
+            if (files != null)
+                for (File f : files) f.delete();
+        }
     }
 
     private void downloadPhoto(String uRl, String fileName, Context context) {

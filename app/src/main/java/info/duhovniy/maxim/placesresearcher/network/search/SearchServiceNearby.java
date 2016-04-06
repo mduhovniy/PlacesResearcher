@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import info.duhovniy.maxim.placesresearcher.R;
 import info.duhovniy.maxim.placesresearcher.db.DBHandler;
 import info.duhovniy.maxim.placesresearcher.network.NetworkConstants;
 import info.duhovniy.maxim.placesresearcher.ui.UIConstants;
@@ -41,8 +42,7 @@ public class SearchServiceNearby extends IntentService {
                     url = NetworkConstants.NEAR_QUERY + lat + "," + lng
                             + NetworkConstants.TYPE_QUERY + searchType
                             + NetworkConstants.KEYWORD_QUERY + URLEncoder.encode(searchRequest, "utf-8")
-                            + NetworkConstants.RADIUS_QUERY + PreferenceManager
-                            .getDefaultSharedPreferences(getApplicationContext()).getInt(UIConstants.RADIUS, 1000)
+                            + NetworkConstants.RADIUS_QUERY + getRadius()
                             + NetworkConstants.KEY + NetworkConstants.WEB_API_KEY;
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
@@ -51,8 +51,7 @@ public class SearchServiceNearby extends IntentService {
                 try {
                     url = NetworkConstants.NEAR_QUERY + lat + "," + lng
                             + NetworkConstants.KEYWORD_QUERY + URLEncoder.encode(searchRequest, "utf-8")
-                            + NetworkConstants.RADIUS_QUERY + PreferenceManager
-                            .getDefaultSharedPreferences(getApplicationContext()).getInt(UIConstants.RADIUS, 1000)
+                            + NetworkConstants.RADIUS_QUERY + getRadius()
                             + NetworkConstants.KEY + NetworkConstants.WEB_API_KEY;
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
@@ -62,7 +61,7 @@ public class SearchServiceNearby extends IntentService {
 
             try {
                 resultsNumber = dbHandler
-                        .updateLastNearbySearch(new JSONObject(NetworkConstants.sendHttpRequest(url)));
+                        .updateLastSearch(new JSONObject(NetworkConstants.sendHttpRequest(url)), true);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -76,5 +75,12 @@ public class SearchServiceNearby extends IntentService {
         sendBroadcast(broadcastIntent);
     }
 
-
+    private double getRadius() {
+        double radius = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+                .getInt(getString(R.string.search_distance), 1) * 1000;
+        if(!PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+                .getBoolean(getString(R.string.unit_checkbox), true))
+            radius *= UIConstants.MILE_TO_KM;
+        return radius;
+    }
 }

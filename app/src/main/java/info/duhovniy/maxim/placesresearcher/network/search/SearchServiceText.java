@@ -28,20 +28,31 @@ public class SearchServiceText extends IntentService {
 
         if (intent.hasExtra(NetworkConstants.REQUEST_STRING)) {
             String searchRequest = intent.getStringExtra(NetworkConstants.REQUEST_STRING);
+            String searchType = intent.getStringExtra(NetworkConstants.REQUEST_TYPE);
 
             String url = null;
-            try {
-                url = NetworkConstants.TEXT_QUERY + URLEncoder.encode(searchRequest, "utf-8")
-                        + NetworkConstants.KEY + NetworkConstants.WEB_API_KEY;
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+            if (!searchType.equals("NA")) {
+                try {
+                    url = NetworkConstants.TEXT_QUERY + URLEncoder.encode(searchRequest, "utf-8")
+                            + NetworkConstants.TYPE_QUERY + searchType
+                            + NetworkConstants.KEY + NetworkConstants.WEB_API_KEY;
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                try {
+                    url = NetworkConstants.TEXT_QUERY + URLEncoder.encode(searchRequest, "utf-8")
+                            + NetworkConstants.KEY + NetworkConstants.WEB_API_KEY;
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
             }
 
             DBHandler dbHandler = new DBHandler(getApplicationContext());
 
             try {
                 resultsNumber = dbHandler
-                        .updateLastTextSearch(new JSONObject(NetworkConstants.sendHttpRequest(url)));
+                        .updateLastSearch(new JSONObject(NetworkConstants.sendHttpRequest(url)), false);
             } catch (JSONException e) {
                 e.printStackTrace();
             }

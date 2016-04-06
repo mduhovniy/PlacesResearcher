@@ -6,9 +6,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -23,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -42,7 +45,7 @@ import info.duhovniy.maxim.placesresearcher.ui.map.LocationProvider;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,
         ControlFragment.ControlInterface, LocationProvider.LocationCallback,
-        OnStreetViewPanoramaReadyCallback {
+        OnStreetViewPanoramaReadyCallback, CompoundButton.OnCheckedChangeListener {
 
     private MyMapFragment mapFragment;
     private ControlFragment controlFragment;
@@ -80,8 +83,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (getSupportActionBar() != null)
             getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        searchSwitch = (Switch) findViewById(R.id.switch_local);
-
         setUpSpinner();
 
         checkGPS();
@@ -107,6 +108,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
 
         navView = (NavigationView) findViewById(R.id.navigation_view);
+
+        searchSwitch = (Switch) findViewById(R.id.switch_local);
+        searchSwitch.setOnCheckedChangeListener(this);
     }
 
     @Override
@@ -119,13 +123,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void handleIntent(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            if (searchSwitch.isChecked()) {
+            if (isLocalSearch()) {
                 if (mLocation != null)
-                    doMySearch(query, searchType);
+                    doMyNearbySearch(query, searchType);
                 else
                     Snackbar.make(drawerLayout, "Location has not yet been found!", Snackbar.LENGTH_LONG).show();
             } else
-                doMySearch(query);
+                doMyTextSearch(query, searchType);
         }
     }
 
@@ -161,14 +165,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_faivorite) {
-            if (isFavorite) {
-                isFavorite = false;
-                item.setIcon(android.R.drawable.btn_star_big_off);
-            } else {
-                isFavorite = true;
-                item.setIcon(android.R.drawable.btn_star_big_on);
-            }
+        switch (id) {
+
+            case R.id.action_faivorite:
+                if (isFavorite) {
+                    isFavorite = false;
+                    item.setIcon(android.R.drawable.btn_star_big_off);
+                } else {
+                    isFavorite = true;
+                    item.setIcon(android.R.drawable.btn_star_big_on);
+                }
+                break;
+            case R.id.action_settings:
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -207,6 +218,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         placeSearchReceiver = getRegisteredReceiver();
         powerConnectionReceiver = getPowerConnectionReceiver();
         mLocationProvider.connect();
+        setUpSwitch();
     }
 
     @Override
@@ -219,17 +231,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     // text search service running
-    public void doMySearch(String query) {
+    private void doMyTextSearch(String query, String type) {
 
         Intent intent = new Intent();
         intent.putExtra(NetworkConstants.REQUEST_STRING, query);
+        intent.putExtra(NetworkConstants.REQUEST_TYPE, type);
 
         intent.setClass(MainActivity.this, SearchServiceText.class);
         startService(intent);
     }
 
     // nearby search service running
-    public void doMySearch(String query, String type) {
+    private void doMyNearbySearch(String query, String type) {
 
         Intent intent = new Intent();
         intent.putExtra(NetworkConstants.REQUEST_STRING, query);
@@ -241,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         startService(intent);
     }
 
-    public void setUpSpinner() {
+    private void setUpSpinner() {
         // Spinner element
         Spinner spinner = (Spinner) findViewById(R.id.spinner_place_types);
 
@@ -306,8 +319,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onPlaceListener(Place place) {
         if (!mapFragment.isVisible() && findViewById(R.id.map_fragment_container) == null)
-            getSupportFragmentManager().beginTransaction().replace(R.id.control_fragment_container,
-                    mapFragment, UIConstants.CONTROL_FRAGMENT).addToBackStack(null).commit();
+            fragmentManager.beginTransaction().replace(R.id.control_fragment_container,
+                    mapFragment, UIConstants.MAP_FRAGMENT).addToBackStack(null).commit();
         mapFragment.showPlace(place);
         if (navView != null) {
             setupDrawerContent(navView, place.getPlaceLocation(), place.getPlaceName());
@@ -319,6 +332,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (mLocation == null)
             Snackbar.make(drawerLayout, "Your location is found!", Snackbar.LENGTH_LONG).show();
         mLocation = location;
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        if (isChecked)
+            editor.putBoolean(getString(R.string.local_switch), true);
+        else
+            editor.putBoolean(getString(R.string.local_switch), false);
+        editor.apply();
+        editor.clear();
     }
 
     private class PlaceSearchReceiver extends BroadcastReceiver {
@@ -380,5 +405,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 return true;
             }
         });
+    }
+
+    private void setUpSwitch() {
+        if (searchSwitch != null) {
+            if (isLocalSearch())
+                searchSwitch.setChecked(true);
+            else
+                searchSwitch.setChecked(false);
+        }
+    }
+
+    private boolean isLocalSearch() {
+        return PreferenceManager.getDefaultSharedPreferences(this)
+                .getBoolean(getString(R.string.local_switch), true);
     }
 }

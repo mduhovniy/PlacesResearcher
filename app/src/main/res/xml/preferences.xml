@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="General Settings">
+
+    <PreferenceCategory android:title="Distance Settings">
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="@string/local_switch"
+            android:summaryOff="Simple text search"
+            android:summaryOn="Local nearby search"
+            android:title="Search Type" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:dependency="local_switch"
+            android:key="@string/unit_checkbox"
+            android:summaryOff="@string/settings_unit_miles"
+            android:summaryOn="@string/settings_unit_km"
+            android:title="Distance Unit" />
+
+        <info.duhovniy.maxim.placesresearcher.ui.DistancePickerPreference
+            android:defaultValue="1"
+            android:dependency="local_switch"
+            android:key="@string/search_distance"
+            android:title="Search Distance" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

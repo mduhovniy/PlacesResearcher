@@ -20,5 +20,8 @@
     <string name="settings_unit_miles">Miles</string>
     <string name="GPS_check_response">Your GPS seems to be disabled, do you want to enable it?</string>
     <string name="switch_text">local </string>
+    <string name="local_switch">local_switch</string>
+    <string name="unit_checkbox">unit_checkbox</string>
+    <string name="search_distance">search_distance</string>
 
 </resources>
