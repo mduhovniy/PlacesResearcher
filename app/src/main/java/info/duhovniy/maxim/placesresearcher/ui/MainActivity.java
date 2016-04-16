@@ -31,6 +31,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crash_reporter.ExceptionHandler;
 import com.google.android.gms.maps.OnStreetViewPanoramaReadyCallback;
 import com.google.android.gms.maps.StreetViewPanorama;
 import com.google.android.gms.maps.SupportStreetViewPanoramaFragment;
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ExceptionHandler.init(this, "maxim.duhovniy@gmail.com", "mate40koloomb","maxim.duhovniy@gmail.com");
         super.onCreate(savedInstanceState);
         // Check whether we're recreating a previously destroyed instance
         // Restore value of members from saved state
@@ -174,6 +176,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 } else {
                     isFavorite = true;
                     item.setIcon(android.R.drawable.btn_star_big_on);
+                }
+                if (controlFragment != null) {
+                    controlFragment.onResultListChange(isFavorite);
                 }
                 break;
             case R.id.action_settings:
@@ -359,7 +364,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         + intent.getIntExtra(NetworkConstants.RESPONSE_MESSAGE, -1)
                         + " places!", Toast.LENGTH_SHORT).show();
             if (controlFragment != null) {
-                controlFragment.onResultListChange();
+                isFavorite = false;
+                controlFragment.onResultListChange(isFavorite);
             }
 
             if (mapFragment.isVisible()) {

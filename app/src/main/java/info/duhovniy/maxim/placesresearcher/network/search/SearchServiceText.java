@@ -64,7 +64,6 @@ public class SearchServiceText extends IntentService {
 
         broadcastIntent.putExtra(NetworkConstants.RESPONSE_MESSAGE, resultsNumber);
         sendBroadcast(broadcastIntent);
-
     }
 
 }

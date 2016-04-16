@@ -22,6 +22,7 @@ public class ControlFragment extends Fragment implements SearchListAdapter.Adapt
     private SwipeRefreshLayout swipeContainer;
     private ArrayList<Place> mList;
     private ControlInterface mPlaceListener;
+    private boolean isFavorite;
 
     private static ControlFragment instance = null;
 
@@ -61,7 +62,7 @@ public class ControlFragment extends Fragment implements SearchListAdapter.Adapt
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                onResultListChange();
+                onResultListChange(isFavorite);
             }
         });
         return rootView;
@@ -70,12 +71,16 @@ public class ControlFragment extends Fragment implements SearchListAdapter.Adapt
     @Override
     public void onResume() {
         super.onResume();
-        onResultListChange();
+        onResultListChange(isFavorite);
     }
 
-    public void onResultListChange() {
+    public void onResultListChange(boolean isFavorite) {
+        this.isFavorite = isFavorite;
         DBHandler db = new DBHandler(getContext());
-        mList = db.getLastSearch();
+        if (isFavorite)
+            mList = db.getFavoriteList();
+        else
+            mList = db.getLastSearch();
         searchListAdapter.updateList(mList);
         resultRecyclerView.setAdapter(searchListAdapter);
         swipeContainer.setRefreshing(false);
@@ -83,6 +88,6 @@ public class ControlFragment extends Fragment implements SearchListAdapter.Adapt
 
     @Override
     public void itemPressed(int position) {
-            mPlaceListener.onPlaceListener(mList.get(position));
+        mPlaceListener.onPlaceListener(mList.get(position));
     }
 }

@@ -1,14 +1,15 @@
 package info.duhovniy.maxim.placesresearcher.network;
 
+import android.content.ContentValues;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.clustering.ClusterItem;
 
-/**
- * Created by maxduhovniy on 15/12/2015.
- */
+import info.duhovniy.maxim.placesresearcher.db.DBConstants;
+
+
 public class Place implements Parcelable, ClusterItem {
 
     private String placeID;
@@ -134,5 +135,21 @@ public class Place implements Parcelable, ClusterItem {
     @Override
     public LatLng getPosition() {
         return placeLocation;
+    }
+
+    public ContentValues toContentValues() {
+        ContentValues values = new ContentValues();
+
+        values.put(DBConstants.PLACE_ID, getPlaceID());
+        values.put(DBConstants.LAT, getPlaceLocation().latitude);
+        values.put(DBConstants.LNG, getPlaceLocation().longitude);
+        values.put(DBConstants.NAME, getPlaceName());
+        values.put(DBConstants.ADDRESS, getPlaceAddress());
+        values.put(DBConstants.PHONE, getPlacePhoneNumber());
+//        values.put(DBConstants.TYPE, getPlaceType());
+        values.put(DBConstants.WEB_SITE, getPlaceWebsiteUrl());
+        values.put(DBConstants.PHOTO_LINK, getPlacePhotoReference());
+
+        return values;
     }
 }

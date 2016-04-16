@@ -63,13 +63,12 @@ public class MyMapFragment extends SupportMapFragment implements OnMapReadyCallb
 
     @Override
     public void onMapReady(GoogleMap map) {
-
         mMap = map;
 
-        mMap.setMyLocationEnabled(true);
-
-        if (mMap != null)
+        if (mMap != null) {
+            mMap.setMyLocationEnabled(true);
             setUpCluster();
+        }
     }
 
     @Override
@@ -99,8 +98,8 @@ public class MyMapFragment extends SupportMapFragment implements OnMapReadyCallb
             circle.setStrokeColor(Color.RED);
             circle.setStrokeWidth(2);
         }
-        circle.setCenter(latLng);
-        circle.setRadius(getRadius());
+        circle.setCenter(latLng);       // move circle to new location
+        circle.setRadius(getRadius());  // double check if user changed preferences
     }
 
     public void setUpCluster() {
@@ -113,7 +112,6 @@ public class MyMapFragment extends SupportMapFragment implements OnMapReadyCallb
 
         DBHandler db = new DBHandler(getContext());
         ArrayList<Place> list = db.getLastSearch();
-
 
         mClusterManager.setRenderer(new OwnRendering(getActivity(), mMap, mClusterManager));
 
@@ -129,7 +127,6 @@ public class MyMapFragment extends SupportMapFragment implements OnMapReadyCallb
                             ClusterManager<Place> clusterManager) {
             super(context, map, clusterManager);
         }
-
 
         protected void onBeforeClusterItemRendered(Place item, MarkerOptions markerOptions) {
 

@@ -76,19 +76,11 @@ public class LocationProvider implements
     public void onConnected(Bundle bundle) {
         Log.i(TAG, "Location services connected.");
 
-/*
-        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        if (location == null) { */
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-/*        } else {
-            mLocationCallback.handleNewLocation(location);
-        }
-*/
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-
     }
 
     @Override

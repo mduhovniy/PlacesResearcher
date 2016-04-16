@@ -9,7 +9,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -90,6 +89,8 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Re
     @Override
     public void onBindViewHolder(final RecyclerViewHolder viewHolder, final int position) {
 
+        final DBHandler db = new DBHandler(mContext);
+
         // Set item views based on the data model
 
         viewHolder.placeName.setText(mList.get(position).getPlaceName());
@@ -101,14 +102,22 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Re
         if (imageFile.exists())
             viewHolder.placePhoto.setImageBitmap(BitmapFactory.decodeFile(imageFile.getAbsolutePath()));
 
-        viewHolder.toggleFavorite.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    // Add to favorite
-                    //viewHolder.toggleFavorite.setChecked(true);
+        viewHolder.toggleFavorite.setChecked(db.isFavorite(mList.get(position)));
+        viewHolder.toggleFavorite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (db.isFavorite(mList.get(position))) {
+                    if (db.deleteFavorite(mList.get(position))) {
+                        Snackbar.make(mView, "Place " + mList.get(position).getPlaceName()
+                                        + " deleted from favorite",
+                                Snackbar.LENGTH_LONG).show();
+                    }
                 } else {
-                    // Delete from favorite
-                    //viewHolder.toggleFavorite.setChecked(false);
+                    if (db.addFavorite(mList.get(position))) {
+                        Snackbar.make(mView, "Place " + mList.get(position).getPlaceName()
+                                        + " added to favorite",
+                                Snackbar.LENGTH_LONG).show();
+                    }
                 }
             }
         });
@@ -129,8 +138,7 @@ public class SearchListAdapter extends RecyclerView.Adapter<SearchListAdapter.Re
 
                 final View.OnClickListener clickListener = new View.OnClickListener() {
                     public void onClick(View v) {
-                        DBHandler db = new DBHandler(mContext);
-                        int rowNumber = db.deleteLastSearchItem(mList.get(position).getPlaceID());
+                        int rowNumber = db.deleteLastSearchItem(mList.get(position));
                         mList = db.getLastSearch();
                         notifyDataSetChanged();
                         Snackbar.make(mView, "#" + rowNumber + " places successfully deleted",
